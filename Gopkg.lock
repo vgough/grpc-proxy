@@ -56,6 +56,12 @@
   revision = "57065200b4b034a1c8ad54ff77069408c2218ae6"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/sync"
+  packages = ["singleflight"]
+  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
+
+[[projects]]
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -116,6 +122,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d39e4a39be34cdf5d1bfa593d8e354af2c9d353f6a6c3111be3568a48c522add"
+  inputs-digest = "18ea9f59e5c3b24b6c63539cebce7169d882e327752d2a85e6dc8974a8d3defe"
   solver-name = "gps-cdcl"
   solver-version = 1
