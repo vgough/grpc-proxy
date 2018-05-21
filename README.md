@@ -9,12 +9,12 @@
 
 ## Project Goal
 
-Makes it easy to build a revser proxy for gRPC targets.  This allows users to
+Makes it easy to build a reverse proxy for gRPC targets.  This allows users to
 route gRPC requests based on method names and metadata without any knowledge of
 message contents.
 
 The project was branched from the proof of concept work in
-github.com/mwitkow/grpc-proxy, and further redined with a real router project
+github.com/mwitkow/grpc-proxy, and further refined with a real router project
 running in a production environment with multiple routing topologies.
 
 ## Proxy Package
@@ -46,8 +46,8 @@ func (d *ExampleDirector) Connect(ctx context.Context, method string) (context.C
   return nil, nil, grpc.Errorf(codes.Unimplemented, "Unknown method")
 }
 ```
-The direct is refiereged with a `grpc.Server`, along with a special codec which
-allows the proxy to handle undecoded byte frames and pass them along without
+The direct is registered with a `grpc.Server`, along with a special codec which
+allows the proxy to handle raw byte frames and pass them along without
 any serialization. The server may have other handlers that will be served
 locally, and the codec will fall back to the protobuf codec when necessary:
 
