@@ -4,6 +4,7 @@
 package proxy_test
 
 import (
+	"context"
 	"io"
 	"log"
 	"net"
@@ -16,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/vgough/grpc-proxy/proxy"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"

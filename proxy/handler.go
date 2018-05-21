@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
-	"google.golang.org/grpc/transport"
 )
 
 var (
@@ -62,11 +61,8 @@ type handler struct {
 // forwarding it to a ClientStream established against the relevant ClientConn.
 func (s *handler) handler(srv interface{}, serverStream grpc.ServerStream) error {
 	serverCtx := serverStream.Context()
-	lowLevelServerStream, ok := transport.StreamFromContext(serverCtx)
-	if !ok {
-		return grpc.Errorf(codes.Internal, "lowLevelServerStream not exists in context")
-	}
-	fullMethodName := lowLevelServerStream.Method()
+	ss := grpc.ServerTransportStreamFromContext(serverCtx)
+	fullMethodName := ss.Method()
 	outCtx, backendConn, err := s.director.Connect(serverCtx, fullMethodName)
 	if err != nil {
 		return err
