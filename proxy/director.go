@@ -1,4 +1,6 @@
-// Copyright 2017 Michal Witkowski. All Rights Reserved.
+// Copyright 2017-2018 Valient Gough
+// Copyright 2017 Michal Witkowski
+// All Rights Reserved.
 // See LICENSE for licensing terms.
 
 package proxy
@@ -15,9 +17,9 @@ import (
 // Metadata (headers). If no handling is meant to be done, a
 // `codes.NotImplemented` gRPC error should be returned.
 //
-// It is worth noting that the Connect will be called *after* all server-side
-// stream interceptors are invoked. So decisions around authorization,
-// monitoring etc. are better to be handled there.
+// Connect will be called *after* all server-side stream interceptors are
+// invoked. So decisions around authorization, monitoring etc. are better to be
+// handled there.
 type StreamDirector interface {
 	// Connect returns a connection to use for the given method,
 	// or an error if the call should not be handled.
