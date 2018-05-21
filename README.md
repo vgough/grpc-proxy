@@ -9,22 +9,22 @@
 
 ## Project Goal
 
-Build a transparent reverse proxy for gRPC targets that will make it easy to expose gRPC services
-over the internet. This includes:
- * no needed knowledge of the semantics of requests exchanged in the call (independent rollouts)
- * easy, declarative definition of backends and their mappings to frontends
- * simple round-robin load balancing of inbound requests from a single connection to multiple backends
+Makes it easy to build a revser proxy for gRPC targets.  This allows users to
+route gRPC requests based on method names and metadata without any knowledge of
+message contents.
 
-The project now exists as a **proof of concept**, with the key piece being the `proxy` package that
-is a generic gRPC reverse proxy handler.
+The project was branched from the proof of concept work in
+github.com/mwitkow/grpc-proxy, and further redined with a real router project
+running in a production environment with multiple routing topologies.
 
-## Proxy Handler
+## Proxy Package
 
-The package [`proxy`](proxy/) contains a generic gRPC reverse proxy handler that allows a gRPC server to
-not know about registered handlers or their data types. Please consult the docs, here's an exaple usage.
+The package [`proxy`](proxy/) contains a generic gRPC reverse proxy handler that
+allows a gRPC server.
 
-Defining a `StreamDirector` that decides where (if at all) to send the request (see
-example_test.go):
+A `StreamDirector` implementation is responsible for deciding where (if at all)
+to send a request (see example_test.go).  This contrived example demonstrates how
+a user could use the path and associated request metadata to route a request:
 ```go
 func (d *ExampleDirector) Connect(ctx context.Context, method string) (context.Context, *grpc.ClientConn, error) {
   // Make sure we never forward internal services.
@@ -46,8 +46,10 @@ func (d *ExampleDirector) Connect(ctx context.Context, method string) (context.C
   return nil, nil, grpc.Errorf(codes.Unimplemented, "Unknown method")
 }
 ```
-Then you need to register it with a `grpc.Server`. The server may have other handlers that will be served
-locally:
+The direct is refiereged with a `grpc.Server`, along with a special codec which
+allows the proxy to handle undecoded byte frames and pass them along without
+any serialization. The server may have other handlers that will be served
+locally, and the codec will fall back to the protobuf codec when necessary:
 
 ```go
 server := grpc.NewServer(
