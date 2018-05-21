@@ -4,15 +4,13 @@
 
 Package proxy provides a reverse proxy handler for gRPC.
 
-The implementation allows a `grpc.Server` to pass a received ServerStream to a
-ClientStream without understanding the semantics of the messages exchanged. It
-basically provides a transparent reverse-proxy.
+This package exposes a `StreamDirector` API that allows users of this package to
+implement arbitrary request routing logic.
 
-This package is intentionally generic, exposing a `StreamDirector` function that
-allows users of this package to implement whatever logic of backend-picking,
-dialing and service verification to perform.
-
-See examples on documented functions.
+The implementation integrates with `grpc.Server`, allowing the StreamDirector to
+### connect an incoming ServerStream to an outgoing ClientStream without
+understanding the semantics of the messages exchanged. This is a building block
+for creation of forward and reverse gRPC proxies.
 
 ## Usage
 
@@ -68,21 +66,32 @@ ServerOption.
 
 ```go
 type StreamDirector interface {
+	// Connect returns a connection to use for the given method,
+	// or an error if the call should not be handled.
+	//
+	// The provided context may be inspected for filtering on request
+	// metadata.
+	//
+	// The returned context is used as the basis for the outgoing connection.
 	Connect(ctx context.Context, method string) (context.Context, *grpc.ClientConn, error)
-	Release(conn *grpc.ClientConn, method string)
+
+	// Release is called when a connection is longer being used.  This is called
+	// once for every call to Connect that does not return an error.
+	//
+	// The provided context is the one returned from Connect.
+	//
+	// This can be used by the director to pool connections or close unused
+	// connections.
+	Release(ctx context.Context, conn *grpc.ClientConn)
 }
 ```
 
-StreamDirector returns a gRPC ClientConn to be used to forward the call to.
-The Release method provides connection management, allowing the director to
-cache connections.
+StreamDirector manages gRPC Client connections used to forward requests.
 
 The presence of the `Context` allows for rich filtering, e.g. based on Metadata
 (headers). If no handling is meant to be done, a `codes.NotImplemented` gRPC
 error should be returned.
 
-It is worth noting that the StreamDirector will be fired *after* all server-side
-stream interceptors are invoked. So decisions around authorization, monitoring
-etc. are better to be handled there.
-
-See the rather rich example.
+Connect will be called *after* all server-side stream interceptors are invoked.
+So decisions around authorization, monitoring etc. are better to be handled
+there.

@@ -3,14 +3,10 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
-function print_real_go_files {
-    grep --files-without-match 'DO NOT EDIT!' $(find . -iname '*.go')
-}
-
 function generate_markdown {
     echo "Generating markdown"
     oldpwd=$(pwd)
-    for i in $(find . -iname 'doc.go'); do
+    for i in $(find . -path ./vendor -prune -o -iname 'doc.go'); do
         dir=${i%/*}
         echo "$dir"
         cd ${dir}
@@ -20,12 +16,5 @@ function generate_markdown {
     done;
 }
 
-function goimports_all {
-    echo "Running goimports"
-    goimports -l -w $(print_real_go_files)
-    return $?
-}
-
 generate_markdown
-goimports_all
 echo "returning $?"
