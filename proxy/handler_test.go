@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"github.com/vgough/grpc-proxy/proxy"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,7 +24,7 @@ import (
 
 	"fmt"
 
-	pb "github.com/mwitkow/grpc-proxy/testservice"
+	pb "github.com/vgough/grpc-proxy/testservice"
 )
 
 const (
@@ -228,7 +228,7 @@ func (s *ProxyHappySuite) SetupSuite() {
 	)
 	// Ping handler is handled as an explicit registration and not as a TransparentHandler.
 	proxy.RegisterService(s.proxy, director,
-		"mwitkow.testproto.TestService",
+		"vgough.testproto.TestService",
 		"Ping")
 
 	// Start the serving loops.

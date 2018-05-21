@@ -4,10 +4,10 @@
 package proxy_test
 
 import (
+	"context"
 	"strings"
 
-	"github.com/mwitkow/grpc-proxy/proxy"
-	"golang.org/x/net/context"
+	"github.com/vgough/grpc-proxy/proxy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -22,7 +22,7 @@ func ExampleRegisterService() {
 	server := grpc.NewServer(grpc.CustomCodec(proxy.Codec()))
 	// Register a TestService with 4 of its methods explicitly.
 	proxy.RegisterService(server, director,
-		"mwitkow.testproto.TestService",
+		"vgough.testproto.TestService",
 		"PingEmpty", "Ping", "PingError", "PingList")
 }
 
