@@ -28,6 +28,8 @@ type rawCodec struct {
 	parentCodec grpc.Codec
 }
 
+var _ grpc.Codec = &rawCodec{}
+
 type frame struct {
 	payload []byte
 }
@@ -56,6 +58,8 @@ func (c *rawCodec) String() string {
 
 // protoCodec is a Codec implementation with protobuf. It is the default rawCodec for gRPC.
 type protoCodec struct{}
+
+var _ grpc.Codec = &protoCodec{}
 
 func (protoCodec) Marshal(v interface{}) ([]byte, error) {
 	return proto.Marshal(v.(proto.Message))

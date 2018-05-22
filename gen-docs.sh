@@ -10,8 +10,7 @@ function generate_markdown {
         dir=${i%/*}
         echo "$dir"
         cd ${dir}
-        ${GOPATH}/bin/godocdown -heading=Title -o DOC.md
-        ln -s DOC.md README.md 2> /dev/null # can fail
+        ${GOPATH}/bin/godocdown -heading=Title -o README.md
         cd ${oldpwd}
     done;
 }

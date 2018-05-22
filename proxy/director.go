@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// StreamDirector manages gRPC Client connections used to forward requests.
+// StreamDirector manages gRPC Client connections for forwarding requests.
 //
 // The presence of the `Context` allows for rich filtering, e.g. based on
 // Metadata (headers). If no handling is meant to be done, a
@@ -26,6 +26,8 @@ type StreamDirector interface {
 	//
 	// The provided context may be inspected for filtering on request
 	// metadata.
+	//
+	// Method is the gRPC request path, which is in the form "/service/method".
 	//
 	// The returned context is used as the basis for the outgoing connection.
 	Connect(ctx context.Context, method string) (context.Context, *grpc.ClientConn, error)

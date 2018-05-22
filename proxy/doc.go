@@ -1,17 +1,16 @@
 // Copyright 2018 Valient Gough
-// Copyright 2017 Michal Witkowski
 // All Rights Reserved.
 // See LICENSE for licensing terms.
 
 /*
-Package proxy provides a reverse proxy handler for gRPC.
+Package proxy provides a gRPC proxy library.
 
-This package exposes a `StreamDirector` API that allows users of this package to
+This package exposes a `StreamDirector` API that allows users of the package to
 implement arbitrary request routing logic.
 
-The implementation integrates with `grpc.Server`, allowing the StreamDirector
-to connect an incoming ServerStream to an outgoing ClientStream without
-understanding the semantics of the messages exchanged.  This is a building block
-for creation of forward and reverse gRPC proxies.
+The implementation integrates with `grpc.Server`, allowing the StreamDirector to
+connect an incoming ServerStream to an outgoing ClientStream without encoding or
+decoding the messages.  This allows the construction of forward and reverse gRPC
+proxies.
 */
 package proxy

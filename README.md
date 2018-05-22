@@ -27,7 +27,7 @@ to send a request (see example_test.go).  This contrived example demonstrates ho
 a user could use the path and associated request metadata to route a request:
 ```go
 func (d *ExampleDirector) Connect(ctx context.Context, method string) (context.Context, *grpc.ClientConn, error) {
-  // Make sure we never forward internal services.
+  // Disable forwarding for all services prefixed with com.example.internal.
   if strings.HasPrefix(method, "/com.example.internal.") {
     return nil, nil, grpc.Errorf(codes.Unimplemented, "Unknown method")
   }
