@@ -34,7 +34,7 @@ func WithDialer(dialer func(ctx context.Context, target string, opts ...grpc.Dia
 // consecutive Expire calls will be closed.
 func NewCachingConnector(opts ...Opt) *CachingConnector {
 	cc := &CachingConnector{
-		entries: make(map[string]*CachedEntry),
+		entries: make(map[string]*cachedEntry),
 		dialer:  grpc.DialContext,
 	}
 	for _, o := range opts {
@@ -47,8 +47,8 @@ func NewCachingConnector(opts ...Opt) *CachingConnector {
 type CachingConnector struct {
 	mu        sync.Mutex
 	sf        singleflight.Group
-	entries   map[string]*CachedEntry // cached entries by address
-	cleanup   []*CachedEntry          // entries awaiting cleanup
+	entries   map[string]*cachedEntry // cached entries by address
+	cleanup   []*cachedEntry          // entries awaiting cleanup
 	dialer    func(ctx context.Context, target string, opts ...grpc.DialOption) (*grpc.ClientConn, error)
 	skipClose bool // for use in testing
 	openCount int  // number of open connections
@@ -64,11 +64,11 @@ type CachingConnector struct {
 	OnConnectionCountUpdate func(count int)
 }
 
-// CachedEntry tracks usage and age of a connection.
+// cachedEntry tracks usage and age of a connection.
 // When an entry is looked up, it's reference count is incremented.
 // Connector.Release() must be called when the connection is no longer in
 // use, in order to release unused resources.
-type CachedEntry struct {
+type cachedEntry struct {
 	// Cfg is the immutable configuration for the endpoint.
 	Conn     *grpc.ClientConn
 	refCount int
@@ -110,7 +110,7 @@ func (c *CachingConnector) Dial(ctx context.Context, addr string) (*grpc.ClientC
 	if err != nil {
 		return nil, err
 	}
-	return c.reserve(v.(*CachedEntry))
+	return c.reserve(v.(*cachedEntry))
 }
 
 // Release allows unused resources to be freed.
@@ -159,7 +159,7 @@ func (c *CachingConnector) CloseOnRelease(addr string) bool {
 	return ok
 }
 
-func (c *CachingConnector) lookup(addr string) *CachedEntry {
+func (c *CachingConnector) lookup(addr string) *cachedEntry {
 	c.mu.Lock()
 	ent, ok := c.entries[addr]
 	if ok {
@@ -169,9 +169,9 @@ func (c *CachingConnector) lookup(addr string) *CachedEntry {
 	return ent
 }
 
-func (c *CachingConnector) store(addr string, conn *grpc.ClientConn) *CachedEntry {
+func (c *CachingConnector) store(addr string, conn *grpc.ClientConn) *cachedEntry {
 	c.mu.Lock()
-	ent := &CachedEntry{
+	ent := &cachedEntry{
 		Conn: conn,
 		addr: addr,
 	}
@@ -185,7 +185,7 @@ func (c *CachingConnector) store(addr string, conn *grpc.ClientConn) *CachedEntr
 	return ent
 }
 
-func (c *CachingConnector) reserve(ent *CachedEntry) (ret *grpc.ClientConn, err error) {
+func (c *CachingConnector) reserve(ent *cachedEntry) (ret *grpc.ClientConn, err error) {
 	c.mu.Lock()
 	if ent.age > 1 {
 		// Should never happen.
@@ -198,7 +198,7 @@ func (c *CachingConnector) reserve(ent *CachedEntry) (ret *grpc.ClientConn, err 
 	return ret, err
 }
 
-func (c *CachingConnector) unlinkOldConnections() []*CachedEntry {
+func (c *CachingConnector) unlinkOldConnections() []*cachedEntry {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -211,7 +211,7 @@ func (c *CachingConnector) unlinkOldConnections() []*CachedEntry {
 		}
 	}
 
-	var old []*CachedEntry
+	var old []*cachedEntry
 	filtered := c.cleanup[:0] // filter in-place
 	for _, ent := range c.cleanup {
 		if ent.refCount > 0 {

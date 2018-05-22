@@ -6,19 +6,6 @@ Package connector provides connection management strategies for gRPC proxies.
 
 ## Usage
 
-#### type CachedEntry
-
-```go
-type CachedEntry struct {
-	// Cfg is the immutable configuration for the endpoint.
-	Conn *grpc.ClientConn
-}
-```
-
-CachedEntry tracks usage and age of a connection. When an entry is looked up,
-it's reference count is incremented. Connector.Release() must be called when the
-connection is no longer in use, in order to release unused resources.
-
 #### type CachingConnector
 
 ```go
