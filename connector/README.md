@@ -49,13 +49,36 @@ cached and reused between calls.
 The provided dialer is used to create new gRPC connections. This may be a
 grpc.Dialer.
 
-#### func (*CachingConnector) Connect
+To use, use CachingConnector.Dial instead of grpc.Dial when creating connections
+to remote endpoints. CachingConnector.Release must be called once for each
+successful Dial call.
+
+Note that CachingConnector.Expire must be called periodically in order to free
+unused resources. Any connection which has been inactive for 2 consecutive
+Expire calls will be closed.
+
+#### func (*CachingConnector) CloseOnRelease
 
 ```go
-func (c *CachingConnector) Connect(ctx context.Context, addr string) (*grpc.ClientConn, error)
+func (c *CachingConnector) CloseOnRelease(addr string) bool
 ```
-Connect establishes a connection or returns a cached entry. Close must be called
-on the returned value, if not nil.
+CloseOnRelease moves any connection associated with the given address to the
+cleanup list, where it will be closed by Expire as soon as the reference count
+reaches zero.
+
+It is not normally necessary to call this function, as unused connections are
+closed automatically over time.
+
+#### func (*CachingConnector) Dial
+
+```go
+func (c *CachingConnector) Dial(ctx context.Context, addr string) (*grpc.ClientConn, error)
+```
+Dial establishes a connection or returns a cached entry. Close must be called on
+the returned value, if not nil.
+
+Dial options are not supported, since they would be ignored if a cached
+connection is used.
 
 #### func (*CachingConnector) Expire
 
@@ -64,6 +87,8 @@ func (c *CachingConnector) Expire() []string
 ```
 Expire cleans up old connections.
 
+This must be called periodically for proper functioning of CachedConnection.
+
 #### func (*CachingConnector) Release
 
 ```go
@@ -71,14 +96,6 @@ func (c *CachingConnector) Release(addr string, conn *grpc.ClientConn)
 ```
 Release allows unused resources to be freed. Must be called once per successful
 call to Connect.
-
-#### func (*CachingConnector) Remove
-
-```go
-func (c *CachingConnector) Remove(addr string) bool
-```
-Remove moves the connection to the cleanup list, where it will be closed on the
-next call to Expire when the reference count reaches zero.
 
 #### type Opt
 
