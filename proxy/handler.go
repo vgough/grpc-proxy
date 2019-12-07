@@ -71,9 +71,7 @@ func (s *handler) handler(srv interface{}, serverStream grpc.ServerStream) error
 	defer s.director.Release(outCtx, backendConn)
 
 	clientCtx, clientCancel := context.WithCancel(outCtx)
-	defer func() {
-		clientCancel()
-	}()
+	defer clientCancel()
 	if _, ok := metadata.FromOutgoingContext(outCtx); !ok {
 		clientCtx = copyMetadata(clientCtx, outCtx)
 	}
