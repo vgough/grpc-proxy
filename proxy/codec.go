@@ -30,25 +30,21 @@ type rawCodec struct {
 
 var _ grpc.Codec = &rawCodec{}
 
-type frame struct {
-	payload []byte
-}
-
 func (c *rawCodec) Marshal(v interface{}) ([]byte, error) {
-	out, ok := v.(*frame)
+	out, ok := v.(*[]byte)
 	if !ok {
 		return c.parentCodec.Marshal(v)
 	}
-	return out.payload, nil
+	return *out, nil
 
 }
 
 func (c *rawCodec) Unmarshal(data []byte, v interface{}) error {
-	dst, ok := v.(*frame)
+	dst, ok := v.(*[]byte)
 	if !ok {
 		return c.parentCodec.Unmarshal(data, v)
 	}
-	dst.payload = data
+	*dst = data
 	return nil
 }
 
