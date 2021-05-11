@@ -59,7 +59,7 @@ func forwardIn(in grpc.ServerStream, out grpc.ClientStream) error {
 }
 
 func copyStream(src grpc.Stream, dst grpc.Stream) error {
-	var f frame
+	var f []byte
 	for {
 		if err := src.RecvMsg(&f); err != nil {
 			return err
