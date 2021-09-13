@@ -3,7 +3,7 @@ package proxy
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/grpc"
 )
 
