@@ -29,19 +29,19 @@ func TestBiDirCopy_ClientEOF(t *testing.T) {
 	}).Return(nil).Once()
 
 	// Client immediately sends EOF.
-	req.On("RecvMsg", mock.AnythingOfType("*proxy.frame")).Return(io.EOF).Once()
+	req.On("RecvMsg", mock.AnythingOfType("*[]uint8")).Return(io.EOF).Once()
 	dest.On("CloseSend").Return(nil).Once()
 
 	// Server message is forwarded to client.
-	dest.On("RecvMsg", mock.AnythingOfType("*proxy.frame")).Run(func(args mock.Arguments) {
-		frame := args.Get(0).(*frame)
-		frame.payload = []byte{0x01, 0x02}
+	dest.On("RecvMsg", mock.AnythingOfType("*[]uint8")).Run(func(args mock.Arguments) {
+		frame := args.Get(0).(*[]byte)
+		*frame = []byte{0x01, 0x02}
 	}).Return(nil).Once()
-	req.On("SendMsg", mock.AnythingOfType("*proxy.frame")).Run(func(args mock.Arguments) {
-		frame := args.Get(0).(*frame)
-		assert.Equal(t, []byte{0x01, 0x02}, frame.payload)
+	req.On("SendMsg", mock.AnythingOfType("*[]uint8")).Run(func(args mock.Arguments) {
+		frame := args.Get(0).(*[]byte)
+		assert.Equal(t, []byte{0x01, 0x02}, *frame)
 	}).Return(nil).Once()
-	dest.On("RecvMsg", mock.AnythingOfType("*proxy.frame")).Return(io.EOF).Once()
+	dest.On("RecvMsg", mock.AnythingOfType("*[]uint8")).Return(io.EOF).Once()
 
 	// Trailers will also be sent.
 	dest.On("Trailer").Return(trailer, nil).Once()
@@ -73,13 +73,13 @@ func TestBiDirCopy_ClientFail(t *testing.T) {
 	block := make(chan time.Time)
 
 	// Client fails immediately.
-	req.On("RecvMsg", mock.AnythingOfType("*proxy.frame")).Return(io.ErrNoProgress).Once()
+	req.On("RecvMsg", mock.AnythingOfType("*[]uint8")).Return(io.ErrNoProgress).Once()
 	dest.On("CloseSend").Run(func(args mock.Arguments) {
 		close(block)
 	}).Return(nil).Once()
 
 	// Server blocks.
-	dest.On("RecvMsg", mock.AnythingOfType("*proxy.frame")).WaitUntil(block).Return(io.EOF).Once()
+	dest.On("RecvMsg", mock.AnythingOfType("*[]uint8")).WaitUntil(block).Return(io.EOF).Once()
 
 	// Trailers will also be sent.
 	dest.On("Trailer").Return(trailer, nil).Once()
