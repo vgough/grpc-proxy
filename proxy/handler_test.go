@@ -24,7 +24,7 @@ import (
 
 	"fmt"
 
-	pb "github.com/vgough/grpc-proxy/testservice"
+	pb "github.com/vgough/grpc-proxy/testservice/gen"
 )
 
 const (
@@ -40,6 +40,7 @@ const (
 
 // asserting service is implemented on the server side and serves as a handler for stuff
 type assertingService struct {
+	pb.UnimplementedTestServiceServer
 	logger *grpclog.Logger
 	t      *testing.T
 }
@@ -119,7 +120,8 @@ func (s *ProxyHappySuite) TestPingEmptyCarriesClientMetadata() {
 	ctx := metadata.NewOutgoingContext(s.ctx(), metadata.Pairs(clientMdKey, "true"))
 	out, err := s.testClient.PingEmpty(ctx, &pb.Empty{})
 	require.NoError(s.T(), err, "PingEmpty should succeed without errors")
-	require.Equal(s.T(), &pb.PingResponse{Value: pingDefaultValue, Counter: 42}, out)
+	s.Require().Equal(pingDefaultValue, out.Value)
+	s.Require().EqualValues(42, out.Counter)
 }
 
 func (s *ProxyHappySuite) TestPingEmpty_StressTest() {
@@ -134,10 +136,11 @@ func (s *ProxyHappySuite) TestPingCarriesServerHeadersAndTrailers() {
 	// This is an awkward calling convention... but meh.
 	out, err := s.testClient.Ping(s.ctx(), &pb.PingRequest{Value: "foo"}, grpc.Header(&headerMd), grpc.Trailer(&trailerMd))
 	require.NoError(s.T(), err, "Ping should succeed without errors")
-	require.Equal(s.T(), &pb.PingResponse{Value: "foo", Counter: 42}, out)
-	assert.EqualValues(s.T(), []string{"I like turtles."}, headerMd.Get(serverHeaderMdKey),
+	s.Require().Equal("foo", out.Value)
+	s.Require().EqualValues(42, out.Counter)
+	s.EqualValues([]string{"I like turtles."}, headerMd.Get(serverHeaderMdKey),
 		"server response headers must contain server data")
-	assert.Len(s.T(), trailerMd, 1, "server response trailers must contain server data")
+	s.Len(trailerMd, 1, "server response trailers must contain server data")
 }
 
 func (s *ProxyHappySuite) TestPingErrorPropagatesAppError() {
