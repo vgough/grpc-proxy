@@ -29,7 +29,7 @@ a user could use the path and associated request metadata to route a request:
 func (d *ExampleDirector) Connect(ctx context.Context, method string) (context.Context, *grpc.ClientConn, error) {
   // Disable forwarding for all services prefixed with com.example.internal.
   if strings.HasPrefix(method, "/com.example.internal.") {
-    return nil, nil, grpc.Errorf(codes.Unimplemented, "Unknown method")
+    return nil, nil, status.Errorf(codes.Unimplemented, "Unknown method")
   }
   md, ok := metadata.FromIncomingContext(ctx)
   if ok {
@@ -43,7 +43,7 @@ func (d *ExampleDirector) Connect(ctx context.Context, method string) (context.C
       return ctx, conn, err
     }
   }
-  return nil, nil, grpc.Errorf(codes.Unimplemented, "Unknown method")
+  return nil, nil, status.Errorf(codes.Unimplemented, "Unknown method")
 }
 ```
 The direct is registered with a `grpc.Server`, along with a special codec which

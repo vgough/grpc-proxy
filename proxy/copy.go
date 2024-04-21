@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // biDirCopy connects an incoming ServerStream with an outgoing ClientStream.
@@ -37,7 +38,7 @@ func forwardOut(in grpc.ServerStream, out grpc.ClientStream) error {
 	case nil:
 		return err2
 	default:
-		return grpc.Errorf(codes.Internal, "failed proxying s2c: %s", err)
+		return status.Errorf(codes.Internal, "failed proxying s2c: %s", err)
 	}
 }
 
@@ -58,7 +59,15 @@ func forwardIn(in grpc.ServerStream, out grpc.ClientStream) error {
 	return err
 }
 
-func copyStream(src grpc.Stream, dst grpc.Stream) error {
+type SourceStream interface {
+	RecvMsg(m any) error
+}
+
+type DestStream interface {
+	SendMsg(m any) error
+}
+
+func copyStream(src SourceStream, dst DestStream) error {
 	var f []byte
 	for {
 		if err := src.RecvMsg(&f); err != nil {
